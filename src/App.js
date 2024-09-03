@@ -67,6 +67,7 @@ const AccelerometerComponent = () => {
   };
 
   useEffect(() => {
+    // Request permission when the component mounts
     requestPermission();
   }, []);
 
