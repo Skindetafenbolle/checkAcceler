@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 const AccelerometerComponent = () => {
   const [acceleration, setAcceleration] = useState({ x: 0, y: 0, z: 0 });
@@ -6,13 +6,29 @@ const AccelerometerComponent = () => {
   const [error, setError] = useState(null);
   const [permissionGranted, setPermissionGranted] = useState(false);
 
+  const motionData = useRef([]);
+
   const handleMotion = (event) => {
     if (event.accelerationIncludingGravity) {
-      const { accelerationIncludingGravity } = event;
+      motionData.current.push(event.accelerationIncludingGravity);
+
+      // Keep only the last 10 values
+      if (motionData.current.length > 10) {
+        motionData.current.shift();
+      }
+
+      const avgAcceleration = motionData.current.reduce((avg, data) => ({
+        x: avg.x + data.x,
+        y: avg.y + data.y,
+        z: avg.z + data.z,
+      }), { x: 0, y: 0, z: 0 });
+
+      const count = motionData.current.length;
+
       setAcceleration({
-        x: accelerationIncludingGravity.x || 0,
-        y: accelerationIncludingGravity.y || 0,
-        z: accelerationIncludingGravity.z || 0,
+        x: avgAcceleration.x / count,
+        y: avgAcceleration.y / count,
+        z: avgAcceleration.z / count,
       });
     } else {
       console.warn('Acceleration data is not available');
@@ -66,9 +82,10 @@ const AccelerometerComponent = () => {
     }
   };
 
-  const handleRequestPermission = () => {
+  useEffect(() => {
     requestPermission();
-  };
+  }, []);
+
 
   return (
       <div>
@@ -79,7 +96,6 @@ const AccelerometerComponent = () => {
         <p>Acceleration along Z-axis: {acceleration.z.toFixed(2)}</p>
         {!listening ? (
             <>
-              <button onClick={handleRequestPermission}>Request Permission</button>
               <button onClick={startListening}>Start Listening</button>
             </>
         ) : (
