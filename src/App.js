@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 const AccelerometerComponent = () => {
   const [acceleration, setAcceleration] = useState({ x: 0, y: 0, z: 0 });
@@ -41,6 +41,15 @@ const AccelerometerComponent = () => {
       setListening(false);
     }
   };
+
+  // This useEffect can help with initial device orientation permission handling
+  useEffect(() => {
+    if (window.DeviceOrientationEvent) {
+      console.log('DeviceOrientationEvent is supported');
+    } else {
+      console.log('DeviceOrientationEvent is not supported');
+    }
+  }, []);
 
   return (
       <div>
