@@ -5,6 +5,7 @@ const AccelerometerComponent = () => {
   const [listening, setListening] = useState(false);
   const [error, setError] = useState(null);
   const [permissionGranted, setPermissionGranted] = useState(false);
+  const [deviceInfo, setDeviceInfo] = useState({});
 
   const motionData = useRef([]);
 
@@ -86,7 +87,34 @@ const AccelerometerComponent = () => {
 
   useEffect(() => {
     requestPermission();
+    fetchDeviceInfo();
   }, []);
+
+  const fetchDeviceInfo = () => {
+    const userAgent = navigator.userAgent;
+    const platform = navigator.platform;
+    const cpuCores = navigator.hardwareConcurrency;
+    const memory = navigator.deviceMemory;
+    const screenWidth = window.screen.width;
+    const screenHeight = window.screen.height;
+    const screenColorDepth = window.screen.colorDepth;
+    const appName = navigator.appName;
+    const appVersion = navigator.appVersion;
+    const browserLanguage = navigator.language;
+
+    setDeviceInfo({
+      userAgent,
+      platform,
+      cpuCores,
+      memory,
+      screenWidth,
+      screenHeight,
+      screenColorDepth,
+      appName,
+      appVersion,
+      browserLanguage,
+    });
+  };
 
   return (
       <div>
@@ -95,6 +123,19 @@ const AccelerometerComponent = () => {
         <p>Acceleration along X-axis: {acceleration.x.toFixed(2)}</p>
         <p>Acceleration along Y-axis: {acceleration.y.toFixed(2)}</p>
         <p>Acceleration along Z-axis: {acceleration.z.toFixed(2)}</p>
+
+        <h2>Device Information</h2>
+        <p><strong>User Agent:</strong> {deviceInfo.userAgent}</p>
+        <p><strong>Platform:</strong> {deviceInfo.platform}</p>
+        <p><strong>CPU Cores:</strong> {deviceInfo.cpuCores}</p>
+        <p><strong>Memory (GB):</strong> {deviceInfo.memory}</p>
+        <p><strong>Screen Width:</strong> {deviceInfo.screenWidth}px</p>
+        <p><strong>Screen Height:</strong> {deviceInfo.screenHeight}px</p>
+        <p><strong>Color Depth:</strong> {deviceInfo.screenColorDepth}-bit</p>
+        <p><strong>App Name:</strong> {deviceInfo.appName}</p>
+        <p><strong>App Version:</strong> {deviceInfo.appVersion}</p>
+        <p><strong>Browser Language:</strong> {deviceInfo.browserLanguage}</p>
+
         {!listening ? (
             <>
               <button onClick={startListening}>Start Listening</button>
