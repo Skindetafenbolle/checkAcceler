@@ -5,26 +5,26 @@ const AccelerometerComponent = () => {
   const [listening, setListening] = useState(false);
   const [error, setError] = useState(null);
 
+  const handleMotion = (event) => {
+    if (event.accelerationIncludingGravity) {
+      const { accelerationIncludingGravity } = event;
+      setAcceleration({
+        x: accelerationIncludingGravity.x || 0,
+        y: accelerationIncludingGravity.y || 0,
+        z: accelerationIncludingGravity.z || 0,
+      });
+    } else {
+      console.warn('Acceleration data is not available');
+    }
+  };
+
+  const handleError = (event) => {
+    setError('Error accessing device motion data');
+    console.error('Error accessing device motion data:', event);
+  };
+
   const startListening = () => {
     if (window.DeviceMotionEvent) {
-      const handleMotion = (event) => {
-        if (event.accelerationIncludingGravity) {
-          const { accelerationIncludingGravity } = event;
-          setAcceleration({
-            x: accelerationIncludingGravity.x || 0,
-            y: accelerationIncludingGravity.y || 0,
-            z: accelerationIncludingGravity.z || 0,
-          });
-        } else {
-          console.warn('Acceleration data is not available');
-        }
-      };
-
-      const handleError = (event) => {
-        setError('Error accessing device motion data');
-        console.error('Error accessing device motion data:', event);
-      };
-
       window.addEventListener('devicemotion', handleMotion, true);
       window.addEventListener('devicemotion', handleError, true);
       setListening(true);
