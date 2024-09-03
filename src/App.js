@@ -43,9 +43,11 @@ const AccelerometerComponent = () => {
   const startListening = () => {
     if (window.DeviceMotionEvent) {
       if (permissionGranted) {
-        window.addEventListener('devicemotion', handleMotion, true);
-        window.addEventListener('devicemotion', handleError, true);
-        setListening(true);
+        if (!listening) {
+          window.addEventListener('devicemotion', handleMotion, true);
+          window.addEventListener('devicemotion', handleError, true);
+          setListening(true);
+        }
       } else {
         setError('Permission to access device motion data is denied.');
       }
@@ -56,7 +58,7 @@ const AccelerometerComponent = () => {
   };
 
   const stopListening = () => {
-    if (window.DeviceMotionEvent) {
+    if (window.DeviceMotionEvent && listening) {
       window.removeEventListener('devicemotion', handleMotion, true);
       window.removeEventListener('devicemotion', handleError, true);
       setListening(false);
@@ -86,7 +88,6 @@ const AccelerometerComponent = () => {
     requestPermission();
   }, []);
 
-
   return (
       <div>
         <h1>Accelerometer Data</h1>
@@ -97,6 +98,7 @@ const AccelerometerComponent = () => {
         {!listening ? (
             <>
               <button onClick={startListening}>Start Listening</button>
+              <button onClick={requestPermission}>Request Permission</button>
             </>
         ) : (
             <button onClick={stopListening}>Stop Listening</button>
