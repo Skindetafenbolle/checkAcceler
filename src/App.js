@@ -66,10 +66,9 @@ const AccelerometerComponent = () => {
     }
   };
 
-  useEffect(() => {
-    // Request permission when the component mounts
+  const handleRequestPermission = () => {
     requestPermission();
-  }, []);
+  };
 
   return (
       <div>
@@ -79,7 +78,10 @@ const AccelerometerComponent = () => {
         <p>Acceleration along Y-axis: {acceleration.y.toFixed(2)}</p>
         <p>Acceleration along Z-axis: {acceleration.z.toFixed(2)}</p>
         {!listening ? (
-            <button onClick={startListening}>Start Listening</button>
+            <>
+              <button onClick={handleRequestPermission}>Request Permission</button>
+              <button onClick={startListening}>Start Listening</button>
+            </>
         ) : (
             <button onClick={stopListening}>Stop Listening</button>
         )}
