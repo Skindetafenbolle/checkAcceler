@@ -1,11 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 
-const AccelerometerComponent = () => {
+const DeviceInfoComponent = () => {
   const [acceleration, setAcceleration] = useState({ x: 0, y: 0, z: 0 });
   const [listening, setListening] = useState(false);
   const [error, setError] = useState(null);
   const [permissionGranted, setPermissionGranted] = useState(false);
   const [deviceInfo, setDeviceInfo] = useState({});
+  const [geoInfo, setGeoInfo] = useState({});
+  const [networkInfo, setNetworkInfo] = useState({});
+  const [storageInfo, setStorageInfo] = useState({});
 
   const motionData = useRef([]);
 
@@ -13,7 +16,6 @@ const AccelerometerComponent = () => {
     if (event.accelerationIncludingGravity) {
       motionData.current.push(event.accelerationIncludingGravity);
 
-      // Keep only the last 10 values
       if (motionData.current.length > 10) {
         motionData.current.shift();
       }
@@ -80,7 +82,6 @@ const AccelerometerComponent = () => {
         setPermissionGranted(false);
       }
     } else {
-      // For devices that don't need explicit permission
       setPermissionGranted(true);
     }
   };
@@ -88,6 +89,9 @@ const AccelerometerComponent = () => {
   useEffect(() => {
     requestPermission();
     fetchDeviceInfo();
+    fetchGeoInfo();
+    fetchNetworkInfo();
+    fetchStorageInfo();
   }, []);
 
   const fetchDeviceInfo = () => {
@@ -101,6 +105,9 @@ const AccelerometerComponent = () => {
     const appName = navigator.appName;
     const appVersion = navigator.appVersion;
     const browserLanguage = navigator.language;
+    const vendor = navigator.vendor;
+    const product = navigator.product;
+    const userAgentData = navigator.userAgentData ? navigator.userAgentData : null;
 
     setDeviceInfo({
       userAgent,
@@ -113,7 +120,51 @@ const AccelerometerComponent = () => {
       appName,
       appVersion,
       browserLanguage,
+      vendor,
+      product,
+      userAgentData,
     });
+  };
+
+  const fetchGeoInfo = () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition((position) => {
+        setGeoInfo({
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+        });
+      }, (error) => {
+        console.error('Error getting location:', error);
+      });
+    } else {
+      setGeoInfo({ error: 'Geolocation is not supported by this browser.' });
+    }
+  };
+
+  const fetchNetworkInfo = () => {
+    const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+    if (connection) {
+      setNetworkInfo({
+        effectiveType: connection.effectiveType,
+        downlink: connection.downlink,
+        rtt: connection.rtt,
+      });
+    } else {
+      setNetworkInfo({ error: 'Network Information API is not supported.' });
+    }
+  };
+
+  const fetchStorageInfo = () => {
+    if (navigator.storage && navigator.storage.estimate) {
+      navigator.storage.estimate().then(estimate => {
+        setStorageInfo({
+          quota: estimate.quota,
+          usage: estimate.usage,
+        });
+      });
+    } else {
+      setStorageInfo({ error: 'Storage API is not supported.' });
+    }
   };
 
   return (
@@ -135,6 +186,34 @@ const AccelerometerComponent = () => {
         <p><strong>App Name:</strong> {deviceInfo.appName}</p>
         <p><strong>App Version:</strong> {deviceInfo.appVersion}</p>
         <p><strong>Browser Language:</strong> {deviceInfo.browserLanguage}</p>
+        <p><strong>Vendor:</strong> {deviceInfo.vendor}</p>
+        <p><strong>Product:</strong> {deviceInfo.product}</p>
+        <p><strong>User Agent Data:</strong> {JSON.stringify(deviceInfo.userAgentData)}</p>
+
+        <h2>Geolocation</h2>
+        {geoInfo.error ? <p>{geoInfo.error}</p> : (
+            <>
+              <p><strong>Latitude:</strong> {geoInfo.latitude}</p>
+              <p><strong>Longitude:</strong> {geoInfo.longitude}</p>
+            </>
+        )}
+
+        <h2>Network Information</h2>
+        {networkInfo.error ? <p>{networkInfo.error}</p> : (
+            <>
+              <p><strong>Effective Network Type:</strong> {networkInfo.effectiveType}</p>
+              <p><strong>Downlink:</strong> {networkInfo.downlink} Mbps</p>
+              <p><strong>RTT:</strong> {networkInfo.rtt} ms</p>
+            </>
+        )}
+
+        <h2>Storage Information</h2>
+        {storageInfo.error ? <p>{storageInfo.error}</p> : (
+            <>
+              <p><strong>Quota:</strong> {storageInfo.quota} bytes</p>
+              <p><strong>Usage:</strong> {storageInfo.usage} bytes</p>
+            </>
+        )}
 
         {!listening ? (
             <>
@@ -148,4 +227,4 @@ const AccelerometerComponent = () => {
   );
 };
 
-export default AccelerometerComponent;
+export default DeviceInfoComponent;
