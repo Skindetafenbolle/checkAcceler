@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 
 const AccelerometerComponent = () => {
   const [acceleration, setAcceleration] = useState({ x: 0, y: 0, z: 0 });
+  const [listening, setListening] = useState(false);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
+  const startListening = () => {
     if (window.DeviceMotionEvent) {
       const handleMotion = (event) => {
         if (event.accelerationIncludingGravity) {
@@ -26,16 +27,20 @@ const AccelerometerComponent = () => {
 
       window.addEventListener('devicemotion', handleMotion, true);
       window.addEventListener('devicemotion', handleError, true);
-
-      return () => {
-        window.removeEventListener('devicemotion', handleMotion, true);
-        window.removeEventListener('devicemotion', handleError, true);
-      };
+      setListening(true);
     } else {
       console.log('DeviceMotionEvent is not supported on this device.');
       setError('DeviceMotionEvent is not supported on this device.');
     }
-  }, []);
+  };
+
+  const stopListening = () => {
+    if (window.DeviceMotionEvent) {
+      window.removeEventListener('devicemotion', handleMotion, true);
+      window.removeEventListener('devicemotion', handleError, true);
+      setListening(false);
+    }
+  };
 
   return (
       <div>
@@ -44,6 +49,11 @@ const AccelerometerComponent = () => {
         <p>Acceleration along X-axis: {acceleration.x.toFixed(2)}</p>
         <p>Acceleration along Y-axis: {acceleration.y.toFixed(2)}</p>
         <p>Acceleration along Z-axis: {acceleration.z.toFixed(2)}</p>
+        {!listening ? (
+            <button onClick={startListening}>Start Listening</button>
+        ) : (
+            <button onClick={stopListening}>Stop Listening</button>
+        )}
       </div>
   );
 };
