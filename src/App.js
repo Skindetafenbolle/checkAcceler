@@ -4,6 +4,7 @@ const AccelerometerComponent = () => {
   const [acceleration, setAcceleration] = useState({ x: 0, y: 0, z: 0 });
   const [listening, setListening] = useState(false);
   const [error, setError] = useState(null);
+  const [permissionGranted, setPermissionGranted] = useState(false);
 
   const handleMotion = (event) => {
     if (event.accelerationIncludingGravity) {
@@ -25,9 +26,13 @@ const AccelerometerComponent = () => {
 
   const startListening = () => {
     if (window.DeviceMotionEvent) {
-      window.addEventListener('devicemotion', handleMotion, true);
-      window.addEventListener('devicemotion', handleError, true);
-      setListening(true);
+      if (permissionGranted) {
+        window.addEventListener('devicemotion', handleMotion, true);
+        window.addEventListener('devicemotion', handleError, true);
+        setListening(true);
+      } else {
+        setError('Permission to access device motion data is denied.');
+      }
     } else {
       console.log('DeviceMotionEvent is not supported on this device.');
       setError('DeviceMotionEvent is not supported on this device.');
@@ -42,13 +47,27 @@ const AccelerometerComponent = () => {
     }
   };
 
-  // This useEffect can help with initial device orientation permission handling
-  useEffect(() => {
-    if (window.DeviceOrientationEvent) {
-      console.log('DeviceOrientationEvent is supported');
+  const requestPermission = async () => {
+    if (window.DeviceOrientationEvent && DeviceOrientationEvent.requestPermission) {
+      try {
+        const permission = await DeviceOrientationEvent.requestPermission();
+        if (permission === 'granted') {
+          setPermissionGranted(true);
+        } else {
+          setPermissionGranted(false);
+        }
+      } catch (error) {
+        console.error('Error requesting permission:', error);
+        setPermissionGranted(false);
+      }
     } else {
-      console.log('DeviceOrientationEvent is not supported');
+      // For devices that don't need explicit permission
+      setPermissionGranted(true);
     }
+  };
+
+  useEffect(() => {
+    requestPermission();
   }, []);
 
   return (
